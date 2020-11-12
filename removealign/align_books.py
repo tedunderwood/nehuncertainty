@@ -1,4 +1,4 @@
-# align_texts.py
+# align_books.py
 
 # The goal here is to take manually-trimmed Gutenberg text files,
 # and align them with HathiTrust files (which have already had
@@ -238,17 +238,17 @@ for guten_id, hathi_ids in idmap.items():
     if offsetmax > guten_length / 4:
         offsetmax = int(guten_length / 4)
 
-    for gutenstart in range(0, offsetmax, 80):
+    for gutenstart in range(0, offsetmax, 80):   # this loop moves inside the guten text
         startmatch = gutentext[gutenstart: gutenstart + 80]
-        startposition, match_quality = find_match_position(hathitext, startmatch, 0, int(hathi_length / 2))
-        if match_quality > .75:
+        startposition, match_quality = find_match_position(hathitext, startmatch, 0, int(hathi_length / 2))  # this function searches the hathi text for the specified match
+        if match_quality > .75:  # ARBITRARY THRESHOLD
             print(match_quality)
             break
 
-    for gutenend in range(guten_length, guten_length - offsetmax, -80):
+    for gutenend in range(guten_length, guten_length - offsetmax, -80):   # moves inside guten text
         endmatch = gutentext [gutenend - 80: gutenend]
-        endposition, match_quality = find_match_position(hathitext, endmatch, int(hathi_length / 2), hathi_length)
-        if match_quality > .75:
+        endposition, match_quality = find_match_position(hathitext, endmatch, int(hathi_length / 2), hathi_length) # this function searches the hathi text for the specified match
+        if match_quality > .75:  # ARBITRARY THRESHOLD
             print(match_quality, endmatch)
             break
         else:
