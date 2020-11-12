@@ -63,7 +63,8 @@ for afile in infiles:
     outpath = outfolder + afile
     outpath = outpath.replace('.tar', '.txt')
     with open(outpath, mode = 'w', encoding = 'utf-8') as f:
-        for page in pagelist:
+        for idx, page in enumerate(pagelist):
+            f.write('\n<#PG# ' + str(idx) + '>\n')
             for line in page:
                 f.write(line)
 
