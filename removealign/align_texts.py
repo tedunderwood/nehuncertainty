@@ -4,36 +4,66 @@
 # and align them with HathiTrust files (which have already had
 # headers removed).
 
-# At first, this will be very simple. We'll just find the start and
+# At its core, this is very simple. We'll just find the start and
 # end of the guten-file inside the hathi-file, using fuzzy matching.
 
-# Eventual complications (TODO stubs below) will be:
+# But there are a couple complications. First, it's possible that the start
+# or end of the guten-file WON'T EXIST in the Hathi file. See the end
+# of 49332 The Epicurean for an example.
 
-# 1) Multiple Hathi volumes for each Gutenberg file.
+# In a case like that we need to change the passage we're looking for.
+# The algorithm I've used here is simply to move the start location forward
+# in the guten-file, or move the end location back in the guten-file,
+# until we find a passage that *can* be matched in the Hathi file.
+# But there are some risky assumptions entailed here: I had to
+# choose an arbitrary threshold for what counts as a "match."
+# I used 0.75, but we should test to see if that was a good choice.
 
-# 2) Maybe we want to break the volumes up into (aligned) 5000-word
-# chunks? It's okay if the chunks aren't exactly 5000 words, so
-# we can slide endpoints around a little to find good matches.
+# A second complication is that we need to keep track of page numbers.
+# The main output of the alignment process will be the aligned
+# texts, or text-chunks, themselves. In producing those, it's easiest
+# to treat the entire file as a single string, and reason about
+# character locations.
 
-# 3) The main output of this process will be the aligned
-# texts, or text-chunks, themselves. But a secondary goal is to identify
-# pages of the original Hathi volume as "front matter," "narrative," or
-# "back matter." We can then use the labeled pages to train
+# But when we're aligning whole books, a secondary goal of the process
+# is to identify pages of the original Hathi volume as "front matter,"
+# "narrative," or "back matter." We can then use the labeled pages to train
 # a model that predicts the start and end of a narrative.
-# This will require establishing a map of character positions in the text
+# This requires establishing a map of character positions in the text
 # file to page numbers in the original Hathi volume.
 
+# Things not yet done (TODO stubs below) include:
+
+# 1) Read the actual metadata, to permit using multiple Hathi
+# volumes for each Gutenberg file.
+
+# This would be an edit to the present script.
+
+# 2) This code aligns whole volumes. But eventually we will also
+# want to break volumes into aligned equal-length chunks. Let's say
+# chunks of roughly 10,000 words each.
+
+# Can we spin off a version of this code that does that?
+# It should be a separate script, because it's a different task.
+# It's okay if the chunks aren't exactly 10,000 words, so
+# we can slide endpoints around a little to find good matches,
+# using a version of the strategy below.
+#
+# We also need a filename protocol for the chunks, like e.g.
+# the third chunks of a file with Guten ID 35418 might be
+# 35418_guten_2 and 35418_hathi_2.
+
+import os, csv
 from difflib import SequenceMatcher
 
-# Hypothesize a dictionary where keys are Gutenberg IDs
+# I just manually creatw a dictionary where keys are Gutenberg IDs
 # and values are a list of Hathitrust IDs.
 
 idmap = {'49332': ['uc2.ark=+13960+t8z897s8x'],
 '35418': ['uc1.b4578709']}
 
 # When we scale up, we will get this from Wenyi's "updated" .tsvs
-# that he createdafter downloading Hathi text. Right now,
-# I'm hard-coding a single pair of volumes.
+# that he createdafter downloading Hathi text.
 
 # TODO stub: write some Python here that reads
 # annotatednormalizedfictionmeta-updated.tsv and
@@ -235,6 +265,8 @@ for guten_id, hathi_ids in idmap.items():
     trimmedhathitext = hathitext[startposition: endposition + 80]
 
     metadatarow = dict()
+    metadatarow['gutenid'] = guten_id
+    metadatarow['hathiids'] = '|'.join(hathi_ids)
     metadatarow['hathistart'] = startposition
     metadatarow['hathiend'] = endposition + 80
     metadatarow['gutenstart'] = gutenstart
@@ -250,7 +282,16 @@ for guten_id, hathi_ids in idmap.items():
 
     trimming_metadata.append(metadatarow)
 
+if not os.path.exists('trimming_metadata.tsv'):
+    with open('trimming_metadata.tsv', mode = 'w', encoding = 'utf-8') as f:
+        f.write('gutenid\thathiids\thathistart\thathiend\tgutenstart\tgutenend\tstartpage\tendpage\n')
 
+fieldnames = ['gutenid', 'hathiids', 'hathistart', 'hathiend', 'gutenstart', 'gutenend', 'startpage', 'endpage']
+
+with open('trimming_metadata.tsv', mode = 'a', encoding = 'utf-8') as f:
+    writer = csv.DictWriter(f, delimiter = '\t', fieldnames = fieldnames)
+    for row in trimming_metadata:
+        writer.writerow(row)
 
 
 
