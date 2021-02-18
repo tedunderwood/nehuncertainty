@@ -6,6 +6,7 @@
 
 import re
 from difflib import SequenceMatcher
+from collections import Counter
 
 def get_indexes(stringlist):
 
@@ -33,6 +34,20 @@ class TwoTexts:
 
         self.gindexes = get_indexes(gutenwords)
         self.hindexes = get_indexes(hathiwords)
+
+
+
+def recursive_split(clean_words, ocr_words):
+
+    clean_counts = Counter(clean_words)
+
+    count_indexes = []
+
+    for word, count in clean_counts.items():
+        if count != 1:
+            continue
+        else:
+            count_indexes.append((word, clean_words.index(word)))
 
 
 
