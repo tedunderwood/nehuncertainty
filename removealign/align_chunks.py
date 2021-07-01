@@ -40,10 +40,9 @@ from difflib import SequenceMatcher
 # creating a dictionary where keys are Gutenberg IDs
 # and values are a list of Hathitrust IDs.
 
-idmap = {'52603': ['uiuo.ark+=13960=t0pr84q15', 'uiuo.ark+=13960=t74t6zh4r'],
-'41256': ['nyp.33433074864178'],
-'35418': ['uc1.b4578709'],
-'49332': ['uc2.ark=+13960+t8z897s8x']}
+idmap = {'27712': ['uc1.$b441023'],
+'27661': ['uc2.ark=+13960+t7wm14b10'],
+'58310': ['nyp.33433075880165']}
 
 # When we scale up, we can get this from Wenyi's "updated" .tsvs
 # that he createdafter downloading Hathi text.

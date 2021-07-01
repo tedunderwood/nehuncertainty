@@ -1,0 +1,42 @@
+import pandas as pd
+import numpy as np
+from pathlib import Path
+import os
+
+alltexts = pd.read_csv('alltexts.csv') # this file should be in the folder already
+
+#What are our "rarest" texts that we know we will need to trim? 
+#Texts by women, written in the 18thc (or our oldest time "chunk") that are biographies ... 
+#are these the 3 parameters we're sticking with? 
+
+rarest = alltexts.loc[(alltexts['authgender'] == 'f') & (alltexts['latestcomp'] < 1800) & (alltexts['genre'] == 'bio')]
+len(rarest)  #I also need some help selecting not just the "bio" rows, but also the "bio | short" etc! 
+
+rarest_t = rarest.loc[(rarest['Trimmed'] != 'Trimmed')]
+len(rarest_t)
+texts2trim = (rarest_t['gbindex'].tolist())
+
+femdf = alltexts.loc[(alltexts['authgender'] == 'f')]
+len(femdf)
+
+femdf_t = femdf.loc[(femdf['Trimmed'] != 'Trimmed')]
+len(femdf_t)
+texts2trim = texts2trim.append(femdf_t['gbindex'].tolist()) 
+#my idea was to keep adding to a list of all the gb texts we should probably trim (by index #) 
+#but I'm having some trouble adding! 
+
+oldest = alltexts.loc[(alltexts['latestcomp'] < 1800)]
+len(oldest)
+
+oldest_t = oldest.loc[(oldest['Trimmed'] != 'Trimmed')]
+len(oldest_t)
+
+texts2trim = texts2trim.append(oldest_t['gbindex'].tolist()) #sorry, not adding to the list right yet
+
+mendf = alltexts.loc[(alltexts['authgender'] == 'm') & (alltexts['Trimmed'] == 'Trimmed')]
+
+len(mendf) 
+
+#we'll need to trim 46 more male-author texts to match the female subset. 
+#We should probably overlap these with earlier texts if we can?
+#Once we decide on our time periods we can group each gender by date and pick our 46 male texts strategically 
